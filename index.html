@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UD2 - Analisi Infortuni | Investigazione Guidata</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .case-intro {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .case-intro h2 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .case-intro .incident-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .data-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #ffc107;
+        }
+
+        .data-item strong {
+            display: block;
+            color: #856404;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .data-item span {
+            color: #495057;
+            font-size: 1em;
+        }
+
+        .phase-section {
+            display: none;
+            margin-bottom: 30px;
+        }
+
+        .phase-section.active {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .phase-header {
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .phase-header h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .phase-header p {
+            font-size: 0.95em;
+            opacity: 0.95;
+        }
+
+        .progress-tracker {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            padding: 15px 10px;
+            position: relative;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .progress-step::before {
+            content: attr(data-step);
+            display: block;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 10px;
+            background: #dee2e6;
+            border-radius: 50%;
+            line-height: 40px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .progress-step.completed::before {
+            background: #28a745;
+            color: white;
+        }
+
+        .progress-step.active::before {
+            background: #e74c3c;
+            color: white;
+            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.2);
+        }
+
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .evidence-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .evidence-card:hover {
+            border-color: #e74c3c;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .evidence-card.selected {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .evidence-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .evidence-card h4 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .evidence-card p {
+            color: #6c757d;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .cause-analysis {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .cause-item {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #6c757d;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cause-item:hover {
+            border-left-color: #e74c3c;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .cause-item.selected {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+
+        .cause-item h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .cause-item p {
+            color: #6c757d;
+            font-size: 0.95em;
+        }
+
+        .why-chain {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .why-level {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+
+        .why-number {
+            background: #3498db;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .why-content {
+            flex: 1;
+        }
+
+        .why-content strong {
+            display: block;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .why-content p {
+            color: #6c757d;
+            font-size: 0.95em;
+        }
+
+        .action-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .action-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .action-card:hover {
+            border-color: #28a745;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .action-card.selected {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .action-card.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 28px;
+            height: 28px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .action-card .priority {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .priority.high {
+            background: #dc3545;
+            color: white;
+        }
+
+        .priority.medium {
+            background: #ffc107;
+            color: #856404;
+        }
+
+        .priority.low {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .action-card h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .action-card p {
+            color: #6c757d;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .feedback-box {
+            display: none;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            animation: fadeIn 0.4s;
+        }
+
+        .feedback-box.show {
+            display: block;
+        }
+
+        .feedback-box.correct {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+
+        .feedback-box.partial {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .feedback-box.incorrect {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+
+        .feedback-box h4 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+
+        .feedback-box p {
+            color: #495057;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .feedback-box ul {
+            margin: 15px 0 15px 20px;
+            color: #495057;
+        }
+
+        .feedback-box ul li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            justify-content: center;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .analysis-summary {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .analysis-summary h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .summary-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+
+        .summary-section h4 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+
+        .summary-section p, .summary-section li {
+            color: #495057;
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+
+        .summary-section ul {
+            margin-left: 20px;
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .score-badge.excellent {
+            background: #28a745;
+            color: white;
+        }
+
+        .score-badge.good {
+            background: #ffc107;
+            color: #856404;
+        }
+
+        .score-badge.poor {
+            background: #dc3545;
+            color: white;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+            .header, .progress-tracker, .button-group, .btn {
+                display: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+            .evidence-grid, .action-selector {
+                grid-template-columns: 1fr;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header no-print">
+            <h1>🔍 UD2 - Analisi degli Infortuni</h1>
+            <p>Investigazione Guidata: Identificazione delle Cause Radice</p>
+        </div>
+
+        <div class="content">
+            <!-- Introduzione Caso -->
+            <div id="intro" class="case-intro">
+                <h2>📋 Caso di Studio: Infortunio da Caduta Materiali</h2>
+                
+                <p style="margin-bottom: 20px; line-height: 1.8;">
+                    <strong>Scenario:</strong> Cantiere di costruzione di un edificio residenziale a Bologna. 
+                    Durante le operazioni di sollevamento di materiali al terzo piano, un pacco di piastrelle 
+                    (peso: 180 kg) si è sganciato dalla gru ed è precipitato al piano terra, colpendo un operaio 
+                    che stava transitando nell'area sottostante.
+                </p>
+
+                <div class="incident-data">
+                    <div class="data-item">
+                        <strong>DATA EVENTO</strong>
+                        <span>15 marzo 2024, ore 14:30</span>
+                    </div>
+                    <div class="data-item">
+                        <strong>LESIONI</strong>
+                        <span>Frattura gamba sx, trauma torace<br>Prognosi: 85 giorni</span>
+                    </div>
+                    <div class="data-item">
+                        <strong>INFORTUNATO</strong>
+                        <span>Muratore, 42 anni<br>10 anni esperienza</span>
+                    </div>
+                    <div class="data-item">
+                        <strong>IMPRESA</strong>
+                        <span>EdilCostruzioni S.r.l.<br>45 dipendenti</span>
+                    </div>
+                </div>
+
+                <p style="margin-top: 20px; padding: 15px; background: white; border-radius: 4px; color: #495057;">
+                    <strong>Il tuo compito:</strong> Condurre un'analisi approfondita dell'infortunio attraverso 4 fasi:
+                    <strong>1) Raccolta evidenze</strong>, <strong>2) Identificazione cause immediate</strong>, 
+                    <strong>3) Analisi cause radice</strong>, <strong>4) Definizione azioni correttive</strong>.
+                </p>
+
+                <button class="btn btn-primary" onclick="startInvestigation()" style="margin-top: 20px; display: block; margin-left: auto; margin-right: auto;">
+                    Inizia l'Investigazione →
+                </button>
+            </div>
+
+            <!-- Progress Tracker -->
+            <div class="progress-tracker no-print" id="progressTracker" style="display: none;">
+                <div class="progress-step active" data-step="1">Evidenze</div>
+                <div class="progress-step" data-step="2">Cause Immediate</div>
+                <div class="progress-step" data-step="3">Cause Radice</div>
+                <div class="progress-step" data-step="4">Azioni Correttive</div>
+            </div>
+
+            <!-- FASE 1: Raccolta Evidenze -->
+            <div id="phase1" class="phase-section">
+                <div class="phase-header">
+                    <h3>📌 Fase 1: Raccolta delle Evidenze</h3>
+                    <p>Seleziona tutte le evidenze rilevanti per comprendere la dinamica dell'infortunio. 
+                    Alcune possono sembrare marginali, ma sono fondamentali per l'analisi delle cause.</p>
+                </div>
+
+                <div class="evidence-grid" id="evidenceGrid"></div>
+
+                <div class="feedback-box" id="feedback1"></div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="submitPhase1()" id="submitPhase1">
+                        Conferma Selezione →
+                    </button>
+                </div>
+            </div>
+
+            <!-- FASE 2: Cause Immediate -->
+            <div id="phase2" class="phase-section">
+                <div class="phase-header">
+                    <h3>⚠️ Fase 2: Identificazione delle Cause Immediate</h3>
+                    <p>Le cause immediate sono gli eventi tecnici o comportamentali che hanno direttamente 
+                    provocato l'infortunio. Seleziona le 3 cause immediate più rilevanti.</p>
+                </div>
+
+                <div class="cause-analysis" id="immediateGrid"></div>
+
+                <div class="feedback-box" id="feedback2"></div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="goToPhase(1)">← Indietro</button>
+                    <button class="btn btn-primary" onclick="submitPhase2()" id="submitPhase2">
+                        Procedi all'Analisi →
+                    </button>
+                </div>
+            </div>
+
+            <!-- FASE 3: Cause Radice (5 Perché) -->
+            <div id="phase3" class="phase-section">
+                <div class="phase-header">
+                    <h3>🔎 Fase 3: Analisi delle Cause Radice (Metodo dei 5 Perché)</h3>
+                    <p>Ora dobbiamo risalire alle cause organizzative profonde. Partendo dalla causa immediata 
+                    "Imbracatura inadeguata", applicheremo il metodo dei 5 perché.</p>
+                </div>
+
+                <div class="why-chain">
+                    <div class="why-level">
+                        <div class="why-number">1</div>
+                        <div class="why-content">
+                            <strong>Perché il carico si è sganciato?</strong>
+                            <p>Perché l'imbracatura utilizzata non era idonea al tipo di carico (piastrelle scivolose)</p>
+                        </div>
+                    </div>
+
+                    <div class="why-level">
+                        <div class="why-number">2</div>
+                        <div class="why-content">
+                            <strong>Perché è stata usata un'imbracatura inadeguata?</strong>
+                            <p id="why2" style="color: #3498db; font-style: italic;">
+                                [Seleziona la risposta corretta sotto]
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="why-level">
+                        <div class="why-number">3</div>
+                        <div class="why-content">
+                            <strong>Perché l'imbracatore non aveva ricevuto formazione adeguata?</strong>
+                            <p id="why3" style="color: #3498db; font-style: italic;">
+                                [Apparirà dopo la selezione precedente]
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="why-level">
+                        <div class="why-number">4</div>
+                        <div class="why-content">
+                            <strong>Perché non esisteva un piano formativo strutturato?</strong>
+                            <p id="why4" style="color: #3498db; font-style: italic;">
+                                [Apparirà dopo la selezione precedente]
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="why-level">
+                        <div class="why-number">5</div>
+                        <div class="why-content">
+                            <strong>Causa Radice Finale</strong>
+                            <p id="why5" style="color: #3498db; font-style: italic;">
+                                [Apparirà alla fine dell'analisi]
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cause-analysis" id="rootCauseGrid"></div>
+
+                <div class="feedback-box" id="feedback3"></div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="goToPhase(2)">← Indietro</button>
+                    <button class="btn btn-primary" onclick="submitPhase3()" id="submitPhase3" disabled>
+                        Procedi alle Azioni →
+                    </button>
+                </div>
+            </div>
+
+            <!-- FASE 4: Azioni Correttive -->
+            <div id="phase4" class="phase-section">
+                <div class="phase-header">
+                    <h3>✅ Fase 4: Definizione delle Azioni Correttive</h3>
+                    <p>Sulla base delle cause radice identificate, seleziona le azioni correttive più efficaci. 
+                    Scegli almeno 5 azioni tra quelle proposte, bilanciando interventi immediati e sistemici.</p>
+                </div>
+
+                <div class="action-selector" id="actionGrid"></div>
+
+                <div class="feedback-box" id="feedback4"></div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="goToPhase(3)">← Indietro</button>
+                    <button class="btn btn-primary" onclick="submitPhase4()" id="submitPhase4">
+                        Completa l'Analisi →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Risultati Finali -->
+            <div id="results" class="results-section">
+                <h2 style="text-align: center; color: #2c3e50; margin-bottom: 25px;">
+                    📊 Report Completo dell'Investigazione
+                </h2>
+
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <span class="score-badge" id="finalScore">Valutazione: 0/100</span>
+                </div>
+
+                <div class="analysis-summary" id="finalSummary"></div>
+
+                <div class="button-group no-print">
+                    <button class="btn btn-primary" onclick="window.print()">
+                        🖨️ Stampa Report
+                    </button>
+                    <button class="btn btn-secondary" onclick="location.reload()">
+                        🔄 Nuova Analisi
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.close()">
+                        ✓ Chiudi e Continua
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database delle evidenze
+        const evidences = [
+            { id: 1, title: "Fascia imbracatura logora", description: "La fascia utilizzata presentava evidenti segni di usura e sfrangiature", relevant: true },
+            { id: 2, title: "Area non delimitata", description: "La zona sottostante alla gru non era transennata", relevant: true },
+            { id: 3, title: "Giubbino alta visibilità presente", description: "L'infortunato indossava regolarmente il giubbino", relevant: false },
+            { id: 4, title: "Assenza formazione imbracatore", description: "L'operatore che ha preparato il carico non aveva attestato di addestramento", relevant: true },
+            { id: 5, title: "Mancato controllo pre-uso", description: "Non risulta compilata la checklist di controllo giornaliero della gru", relevant: true },
+            { id: 6, title: "Condizioni meteo normali", description: "Cielo sereno, vento assente, temperatura 18°C", relevant: false },
+            { id: 7, title: "POS non aggiornato", description: "Il POS datava 2022 e non includeva le procedure di imbracatura", relevant: true },
+            { id: 8, title: "Registro manutenzioni incompleto", description: "La gru non aveva manutenzione documentata da 8 mesi", relevant: true }
+        ];
+
+        // Cause immediate
+        const immediateCauses = [
+            { id: 1, title: "Imbracatura inadeguata al carico", description: "Fascia in tessuto su materiale liscio e pesante", correct: true },
+            { id: 2, title: "Velocità eccessiva del sollevamento", description: "Movimento troppo rapido che ha generato oscillazioni", correct: false },
+            { id: 3, title: "Area di caduta non protetta", description: "Assenza di transenne e segnaletica nella zona sottostante", correct: true },
+            { id: 4, title: "Mancata comunicazione gruista-segnalatore", description: "Non risultano segnali coordinati tra operatori", correct: false },
+            { id: 5, title: "Scarsa visibilità del carico", description: "Pacco troppo voluminoso per visuale diretta", correct: false },
+            { id: 6, title: "Assenza di controllo pre-sollevamento", description: "Nessuna verifica della corretta imbracatura prima del sollevamento", correct: true }
+        ];
+
+        // Analisi delle cause radice (Perché 2, 3, 4)
+        const whyQuestions = [
+            {
+                step: 2,
+                question: "Perché è stata usata un'imbracatura inadeguata?",
+                options: [
+                    { text: "Perché l'operatore era disattento", correct: false },
+                    { text: "Perché l'imbracatore non aveva ricevuto formazione specifica sul tipo di carico", correct: true },
+                    { text: "Perché le fasce corrette erano finite", correct: false }
+                ]
+            },
+            {
+                step: 3,
+                question: "Perché l'imbracatore non aveva ricevuto formazione adeguata?",
+                options: [
+                    { text: "Perché era stato assunto di recente", correct: false },
+                    { text: "Perché l'azienda non aveva un piano formativo strutturato per nuove mansioni", correct: true },
+                    { text: "Perché la formazione era troppo costosa", correct: false }
+                ]
+            },
+            {
+                step: 4,
+                question: "Perché non esisteva un piano formativo strutturato?",
+                options: [
+                    { text: "Perché il datore di lavoro sottovalutava l'importanza della formazione continua", correct: false },
+                    { text: "Perché non era stata effettuata una valutazione dei rischi specifica per le attività di sollevamento", correct: true },
+                    { text: "Perché l'RSPP non era competente", correct: false }
+                ]
+            }
+        ];
+
+        // Azioni correttive
+        const correctiveActions = [
+            { id: 1, priority: "high", title: "Formazione obbligatoria imbracatori", description: "Corso di 12 ore su tecniche di imbracatura e tipologie di carichi", correct: true },
+            { id: 2, priority: "high", title: "Revisione DVR sezione sollevamenti", description: "Aggiornamento con analisi specifica rischi di caduta materiali", correct: true },
+            { id: 3, priority: "medium", title: "Acquisto nuove attrezzature di imbracatura", description: "Dotazione di fasce certificate per diversi tipi di materiale", correct: true },
+            { id: 4, priority: "low", title: "Cambio fornitore della gru", description: "Sostituzione del fornitore per problemi contrattuali", correct: false },
+            { id: 5, priority: "high", title: "Procedura controllo pre-sollevamento", description: "Checklist obbligatoria firmata prima di ogni operazione", correct: true },
+            { id: 6, priority: "medium", title: "Delimitazione permanente aree di sollevamento", description: "Transenne fisse con segnaletica luminosa", correct: true },
+            { id: 7, priority: "low", title: "Aumento della pausa pranzo", description: "Estensione della pausa per ridurre lo stress", correct: false },
+            { id: 8, priority: "high", title: "Nomina preposto dedicato alle operazioni di sollevamento", description: "Supervisione costante durante tutte le fasi critiche", correct: true },
+            { id: 9, priority: "medium", title: "Registro manutenzioni digitalizzato", description: "Sistema di alert automatico per scadenze verifiche", correct: true },
+            { id: 10, priority: "low", title: "Installazione telecamere di sorveglianza", description: "Monitoraggio video delle aree di lavoro", correct: false }
+        ];
+
+        // Stato globale
+        let currentPhase = 0;
+        let selectedEvidences = [];
+        let selectedImmediateCauses = [];
+        let whyAnswers = [];
+        let selectedActions = [];
+        let scores = { phase1: 0, phase2: 0, phase3: 0, phase4: 0 };
+
+        function startInvestigation() {
+            document.getElementById('intro').style.display = 'none';
+            document.getElementById('progressTracker').style.display = 'flex';
+            goToPhase(1);
+        }
+
+        function goToPhase(phase) {
+            // Nascondi tutte le fasi
+            document.querySelectorAll('.phase-section').forEach(el => el.classList.remove('active'));
+            
+            // Mostra fase richiesta
+            document.getElementById(`phase${phase}`).classList.add('active');
+            currentPhase = phase;
+
+            // Aggiorna progress tracker
+            document.querySelectorAll('.progress-step').forEach((step, i) => {
+                step.classList.remove('active', 'completed');
+                if (i < phase - 1) step.classList.add('completed');
+                if (i === phase - 1) step.classList.add('active');
+            });
+
+            // Popola contenuto fase
+            if (phase === 1 && document.getElementById('evidenceGrid').children.length === 0) {
+                populatePhase1();
+            } else if (phase === 2 && document.getElementById('immediateGrid').children.length === 0) {
+                populatePhase2();
+            } else if (phase === 3 && document.getElementById('rootCauseGrid').children.length === 0) {
+                populatePhase3();
+            } else if (phase === 4 && document.getElementById('actionGrid').children.length === 0) {
+                populatePhase4();
+            }
+        }
+
+        function populatePhase1() {
+            const grid = document.getElementById('evidenceGrid');
+            evidences.forEach(ev => {
+                const card = document.createElement('div');
+                card.className = 'evidence-card';
+                card.innerHTML = `
+                    <h4>${ev.title}</h4>
+                    <p>${ev.description}</p>
+                `;
+                card.onclick = () => toggleEvidence(card, ev.id);
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleEvidence(card, id) {
+            card.classList.toggle('selected');
+            if (selectedEvidences.includes(id)) {
+                selectedEvidences = selectedEvidences.filter(e => e !== id);
+            } else {
+                selectedEvidences.push(id);
+            }
+        }
+
+        function submitPhase1() {
+            const relevant = evidences.filter(e => e.relevant).map(e => e.id);
+            const correct = selectedEvidences.filter(id => relevant.includes(id)).length;
+            const incorrect = selectedEvidences.filter(id => !relevant.includes(id)).length;
+            const missed = relevant.filter(id => !selectedEvidences.includes(id)).length;
+
+            scores.phase1 = Math.max(0, correct * 10 - incorrect * 5);
+
+            const feedback = document.getElementById('feedback1');
+            feedback.classList.add('show');
+
+            if (correct === relevant.length && incorrect === 0) {
+                feedback.className = 'feedback-box show correct';
+                feedback.innerHTML = `
+                    <h4>✓ Eccellente! Hai identificato tutte le evidenze rilevanti (${correct}/${relevant.length})</h4>
+                    <p>Hai dimostrato capacità di distinguere tra informazioni critiche e dettagli marginali. 
+                    Le evidenze selezionate coprono tutti gli aspetti dell'analisi: aspetti tecnici (imbracatura, manutenzione), 
+                    organizzativi (POS, formazione) e procedurali (controlli, delimitazioni).</p>
+                `;
+            } else {
+                feedback.className = 'feedback-box show partial';
+                feedback.innerHTML = `
+                    <h4>⚠️ Analisi parziale (${correct} corrette, ${incorrect} errate, ${missed} mancanti)</h4>
+                    <p><strong>Evidenze rilevanti da considerare:</strong></p>
+                    <ul>
+                        ${relevant.map(id => {
+                            const ev = evidences.find(e => e.id === id);
+                            const status = selectedEvidences.includes(id) ? '✓' : '✗ [MANCANTE]';
+                            return `<li>${status} ${ev.title}: ${ev.description}</li>`;
+                        }).join('')}
+                    </ul>
+                    <p style="margin-top: 15px;"><strong>Perché sono rilevanti:</strong> 
+                    Ogni evidenza tecnica (imbracatura, manutenzione) o organizzativa (formazione, POS, controlli) 
+                    contribuisce a ricostruire la catena causale dell'infortunio secondo l'art. 29 del D.Lgs. 81/2008.</p>
+                `;
+            }
+
+            document.getElementById('submitPhase1').textContent = 'Procedi alla Fase 2 →';
+            document.getElementById('submitPhase1').onclick = () => goToPhase(2);
+        }
+
+        function populatePhase2() {
+            const grid = document.getElementById('immediateGrid');
+            immediateCauses.forEach(cause => {
+                const card = document.createElement('div');
+                card.className = 'cause-item';
+                card.innerHTML = `
+                    <h4>${cause.title}</h4>
+                    <p>${cause.description}</p>
+                `;
+                card.onclick = () => toggleCause(card, cause.id, 'immediate');
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleCause(card, id, type) {
+            const array = type === 'immediate' ? selectedImmediateCauses : [];
+            
+            if (card.classList.contains('selected')) {
+                card.classList.remove('selected');
+                const idx = array.indexOf(id);
+                if (idx > -1) array.splice(idx, 1);
+            } else {
+                if (array.length < 3) {
+                    card.classList.add('selected');
+                    array.push(id);
+                } else {
+                    alert('Puoi selezionare massimo 3 cause immediate.');
+                }
+            }
+
+            if (type === 'immediate') {
+                selectedImmediateCauses = array;
+            }
+        }
+
+        function submitPhase2() {
+            if (selectedImmediateCauses.length < 3) {
+                alert('Seleziona esattamente 3 cause immediate prima di procedere.');
+                return;
+            }
+
+            const correctIds = immediateCauses.filter(c => c.correct).map(c => c.id);
+            const correctSelected = selectedImmediateCauses.filter(id => correctIds.includes(id)).length;
+
+            scores.phase2 = correctSelected * 10;
+
+            const feedback = document.getElementById('feedback2');
+            feedback.classList.add('show');
+
+            if (correctSelected === 3) {
+                feedback.className = 'feedback-box show correct';
+                feedback.innerHTML = `
+                    <h4>✓ Analisi corretta delle cause immediate</h4>
+                    <p>Hai identificato le tre cause tecniche dirette:</p>
+                    <ul>
+                        <li><strong>Imbracatura inadeguata:</strong> violazione dell'art. 168 D.Lgs. 81/2008 (attrezzature idonee)</li>
+                        <li><strong>Area non protetta:</strong> violazione dell'art. 153 (prevenzione caduta materiali)</li>
+                        <li><strong>Assenza controllo pre-sollevamento:</strong> mancata applicazione dell'art. 71 (controlli pre-uso)</li>
+                    </ul>
+                    <p>Ora risaliamo alle cause organizzative profonde.</p>
+                `;
+            } else {
+                feedback.className = 'feedback-box show partial';
+                feedback.innerHTML = `
+                    <h4>⚠️ Alcune cause immediate non sono state identificate (${correctSelected}/3 corrette)</h4>
+                    <p><strong>Le cause immediate corrette erano:</strong></p>
+                    <ul>
+                        ${correctIds.map(id => {
+                            const cause = immediateCauses.find(c => c.id === id);
+                            return `<li>${cause.title} - ${cause.description}</li>`;
+                        }).join('')}
+                    </ul>
+                    <p>Ricorda: le cause immediate sono eventi tecnici o comportamentali direttamente collegati all'infortunio.</p>
+                `;
+            }
+
+            document.getElementById('submitPhase2').textContent = 'Procedi all\'Analisi Radice →';
+            document.getElementById('submitPhase2').onclick = () => goToPhase(3);
+        }
+
+        function populatePhase3() {
+            const grid = document.getElementById('rootCauseGrid');
+            
+            whyQuestions.forEach((why, index) => {
+                const section = document.createElement('div');
+                section.style.marginBottom = '25px';
+                section.innerHTML = `
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">Perché ${why.step}: ${why.question}</h4>
+                    <div class="evidence-grid" id="why${why.step}Grid"></div>
+                `;
+                grid.appendChild(section);
+
+                const optionsGrid = section.querySelector(`#why${why.step}Grid`);
+                why.options.forEach((opt, i) => {
+                    const card = document.createElement('div');
+                    card.className = 'evidence-card';
+                    card.innerHTML = `<p style="font-size: 0.95em;">${opt.text}</p>`;
+                    card.onclick = () => selectWhy(why.step, i, opt.correct, opt.text);
+                    optionsGrid.appendChild(card);
+                });
+            });
+        }
+
+        let whyStep = 2;
+
+        function selectWhy(step, optionIndex, isCorrect, text) {
+            if (step !== whyStep) return;
+
+            // Evidenzia selezione
+            const grid = document.getElementById(`why${step}Grid`);
+            grid.querySelectorAll('.evidence-card').forEach((card, i) => {
+                card.classList.remove('selected');
+                if (i === optionIndex) card.classList.add('selected');
+            });
+
+            // Registra risposta
+            whyAnswers.push({ step, correct: isCorrect });
+
+            // Aggiorna visualizzazione
+            document.getElementById(`why${step}`).textContent = text;
+            document.getElementById(`why${step}`).style.color = '#495057';
+            document.getElementById(`why${step}`).style.fontStyle = 'normal';
+
+            // Avanza al prossimo perché
+            whyStep++;
+            
+            if (whyStep === 5) {
+                document.getElementById('why5').textContent = "Assenza di una cultura aziendale della valutazione continua dei rischi e di pianificazione formativa proattiva (causa radice sistemica)";
+                document.getElementById('why5').style.color = '#e74c3c';
+                document.getElementById('why5').style.fontWeight = 'bold';
+                document.getElementById('why5').style.fontStyle = 'normal';
+                
+                document.getElementById('submitPhase3').disabled = false;
+            }
+        }
+
+        function submitPhase3() {
+            const correctAnswers = whyAnswers.filter(a => a.correct).length;
+            scores.phase3 = correctAnswers * 10;
+
+            const feedback = document.getElementById('feedback3');
+            feedback.classList.add('show');
+
+            if (correctAnswers === 3) {
+                feedback.className = 'feedback-box show correct';
+                feedback.innerHTML = `
+                    <h4>✓ Analisi delle cause radice completata correttamente</h4>
+                    <p>Hai applicato correttamente il metodo dei 5 perché, risalendo dalla causa tecnica 
+                    (imbracatura inadeguata) fino alla causa organizzativa profonda: <strong>l'assenza di un 
+                    sistema di valutazione continua dei rischi</strong> (art. 29, D.Lgs. 81/2008).</p>
+                    <p style="margin-top: 15px;">Questa è la vera radice dell'infortunio: non la fascia usurata, 
+                    ma l'assenza di un processo aziendale che garantisca formazione, procedure e controlli aggiornati.</p>
+                `;
+            } else {
+                feedback.className = 'feedback-box show partial';
+                feedback.innerHTML = `
+                    <h4>⚠️ Analisi parziale (${correctAnswers}/3 corrette)</h4>
+                    <p>La catena causale corretta era:</p>
+                    <ul>
+                        <li><strong>Perché 2:</strong> Mancanza di formazione specifica dell'imbracatore</li>
+                        <li><strong>Perché 3:</strong> Assenza di piano formativo strutturato</li>
+                        <li><strong>Perché 4:</strong> Mancata valutazione dei rischi specifica per attività di sollevamento</li>
+                    </ul>
+                    <p>Il metodo dei 5 perché serve a non fermarsi ai sintomi (fascia rotta) ma a risalire alle 
+                    carenze organizzative che permettono agli errori tecnici di verificarsi.</p>
+                `;
+            }
+
+            document.getElementById('submitPhase3').textContent = 'Procedi alle Azioni Correttive →';
+            document.getElementById('submitPhase3').onclick = () => goToPhase(4);
+        }
+
+        function populatePhase4() {
+            const grid = document.getElementById('actionGrid');
+            correctiveActions.forEach(action => {
+                const card = document.createElement('div');
+                card.className = 'action-card';
+                card.innerHTML = `
+                    <span class="priority ${action.priority}">${action.priority === 'high' ? 'ALTA' : action.priority === 'medium' ? 'MEDIA' : 'BASSA'}</span>
+                    <h4>${action.title}</h4>
+                    <p>${action.description}</p>
+                `;
+                card.onclick = () => toggleAction(card, action.id);
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleAction(card, id) {
+            card.classList.toggle('selected');
+            if (selectedActions.includes(id)) {
+                selectedActions = selectedActions.filter(a => a !== id);
+            } else {
+                selectedActions.push(id);
+            }
+        }
+
+        function submitPhase4() {
+            if (selectedActions.length < 5) {
+                alert('Seleziona almeno 5 azioni correttive prima di completare.');
+                return;
+            }
+
+            const correctIds = correctiveActions.filter(a => a.correct).map(a => a.id);
+            const correctSelected = selectedActions.filter(id => correctIds.includes(id)).length;
+            const incorrectSelected = selectedActions.filter(id => !correctIds.includes(id)).length;
+
+            scores.phase4 = Math.max(0, correctSelected * 5 - incorrectSelected * 3);
+
+            showFinalResults();
+        }
+
+        function showFinalResults() {
+            document.querySelectorAll('.phase-section').forEach(el => el.style.display = 'none');
+            document.getElementById('progressTracker').style.display = 'none';
+            document.getElementById('results').classList.add('active');
+
+            const totalScore = scores.phase1 + scores.phase2 + scores.phase3 + scores.phase4;
+            const badge = document.getElementById('finalScore');
+            
+            if (totalScore >= 80) {
+                badge.className = 'score-badge excellent';
+                badge.textContent = `Valutazione: Eccellente (${totalScore}/100)`;
+            } else if (totalScore >= 60) {
+                badge.className = 'score-badge good';
+                badge.textContent = `Valutazione: Buono (${totalScore}/100)`;
+            } else {
+                badge.className = 'score-badge poor';
+                badge.textContent = `Valutazione: Da migliorare (${totalScore}/100)`;
+            }
+
+            // Genera summary dettagliato
+            const summary = document.getElementById('finalSummary');
+            summary.innerHTML = `
+                <h3>📋 Sintesi dell'Investigazione</h3>
+
+                <div class="summary-section">
+                    <h4>1. Evidenze Raccolte (${scores.phase1}/60 punti)</h4>
+                    <p>Hai identificato ${selectedEvidences.length} evidenze, di cui ${selectedEvidences.filter(id => evidences.find(e => e.id === id).relevant).length} rilevanti per l'analisi causale.</p>
+                </div>
+
+                <div class="summary-section">
+                    <h4>2. Cause Immediate (${scores.phase2}/30 punti)</h4>
+                    <p>Le cause immediate corrette identificate erano:</p>
+                    <ul>
+                        <li>Imbracatura inadeguata al tipo di carico (art. 168, D.Lgs. 81/2008)</li>
+                        <li>Area di caduta non protetta (art. 153)</li>
+                        <li>Assenza di controllo pre-sollevamento (art. 71)</li>
+                    </ul>
+                </div>
+
+                <div class="summary-section">
+                    <h4>3. Cause Radice (${scores.phase3}/30 punti)</h4>
+                    <p><strong>Causa radice identificata:</strong> Assenza di un sistema di gestione della sicurezza 
+                    che garantisca valutazione continua dei rischi, formazione specifica e procedure operative aggiornate.</p>
+                    <p style="margin-top: 10px;">Questa carenza sistemica ha permesso che errori tecnici 
+                    (imbracatura inadeguata) si verificassero senza barriere organizzative preventive.</p>
+                </div>
+
+                <div class="summary-section">
+                    <h4>4. Azioni Correttive (${scores.phase4}/40 punti)</h4>
+                    <p>Le azioni prioritarie dovrebbero includere:</p>
+                    <ul>
+                        <li><strong>Immediate:</strong> Formazione imbracatori, revisione DVR, procedure di controllo</li>
+                        <li><strong>Breve termine:</strong> Dotazione attrezzature certificate, delimitazione aree</li>
+                        <li><strong>Sistemiche:</strong> Nomina preposto dedicato, sistema di manutenzione programmata</li>
+                    </ul>
+                </div>
+
+                <div class="summary-section" style="background: #d4edda; border-left-color: #28a745;">
+                    <h4>💡 Principi Chiave dell'Analisi degli Infortuni</h4>
+                    <p>Un'investigazione efficace secondo l'art. 18 del D.Lgs. 81/2008 deve:</p>
+                    <ul>
+                        <li>Raccogliere evidenze oggettive (documenti, testimonianze, misurazioni)</li>
+                        <li>Distinguere tra cause immediate (tecniche) e cause radice (organizzative)</li>
+                        <li>Non fermarsi al "chi" ma risalire al "perché sistemico"</li>
+                        <li>Proporre azioni correttive proporzionate alle cause radice</li>
+                        <li>Documentare tutto per prevenire ripetizioni (cultura della sicurezza)</li>
+                    </ul>
+                    <p style="margin-top: 15px;"><strong>Riferimenti normativi:</strong> D.Lgs. 81/2008, artt. 18 (obblighi datore di lavoro), 
+                    29 (valutazione dei rischi), UNI 11559:2019 (Root Cause Analysis).</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
